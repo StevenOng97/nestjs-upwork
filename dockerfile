@@ -1,41 +1,29 @@
+# Use an official Node.js runtime as the base image
 FROM node:18-alpine
 
-# Install necessary tools
-RUN apk add --no-cache curl
-
-# Install nvm
-ENV NVM_DIR /usr/local/nvm
-ENV NODE_VERSION 18.17.0
-
-RUN mkdir -p $NVM_DIR && \
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash && \
-    . $NVM_DIR/nvm.sh && \
-    nvm install $NODE_VERSION && \
-    nvm alias default $NODE_VERSION && \
-    nvm use default
-
-# Add node and npm to path so the commands are available
-ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
-ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
-
-# Verify installation
-RUN node -v
-RUN npm -v
-
-# Set working directory
+# Set the working directory in the container
 WORKDIR /app
 
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
-# Copy the rest of the application
+# Copy Prisma schema
+COPY prisma ./prisma
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Copy the rest of the application code
 COPY . .
 
 # Build the application
 RUN npm run build
+
+# Expose the port the app runs on
+EXPOSE 8080
 
 # Start the application
 CMD ["npm", "run", "start:prod"]
