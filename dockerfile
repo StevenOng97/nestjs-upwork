@@ -7,7 +7,7 @@ COPY prisma ./prisma
 RUN npx prisma generate
 COPY . .
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN npm run build
+RUN npm run build --verbose
 
 # Production stage
 FROM node:18-alpine
