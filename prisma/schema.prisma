@@ -1,0 +1,88 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id             String          @id @default(cuid())
+    email          String          @unique
+    password       String?
+    createdAt      DateTime        @default(now()) @map("created_at")
+    updatedAt      DateTime        @updatedAt @map("updated_at")
+    refreshToken   String?
+    oauthAccounts  OAuthAccount[]
+    movies         Movie[]
+    movieFeedbacks MovieFeedback[]
+}
+
+model OAuthAccount {
+    id        Int      @id @default(autoincrement())
+    provider  Provider
+    user      User     @relation(fields: [userId], references: [id])
+    userId    String   @map("user_id")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model Movie {
+    id             Int             @id @default(autoincrement())
+    title          String
+    // Presigned URL
+    poster         String?
+    publishingYear Int             @map("publishing_year")
+    createdBy      User            @relation(fields: [userId], references: [id])
+    userId         String          @map("user_id")
+    createdAt      DateTime        @default(now()) @map("created_at")
+    updatedAt      DateTime        @updatedAt @map("updated_at")
+    status         MovieStatus
+    feedbacks      MovieFeedback[]
+}
+
+model MovieFeedback {
+    content   String
+    rating    Float
+    movie     Movie    @relation(fields: [movieId], references: [id])
+    movieId   Int      @map("movie_id")
+    createdBy User     @relation(fields: [userId], references: [id])
+    userId    String   @map("user_id")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@unique([movieId, userId])
+}
+
+model Attachment {
+    // Store Original URL
+    url            String
+    resourceId     Int            @map("resource_id")
+    resourceType   ResourceType   @map("resource_type")
+    attachmentType AttachmentType @map("attachment_type")
+    createdAt      DateTime       @default(now()) @map("created_at")
+    updatedAt      DateTime       @updatedAt @map("updated_at")
+
+    @@unique([resourceId, resourceType, attachmentType])
+}
+
+enum ResourceType {
+    MOVIE
+    USER
+}
+
+enum AttachmentType {
+    IMAGE
+    VIDEO
+}
+
+enum MovieStatus {
+    DRAFT
+    PUBLISHED
+}
+
+enum Provider {
+    EMAIL
+    GOOGLE
+}
