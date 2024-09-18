@@ -5,13 +5,11 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install
 
-COPY . .
-
-RUN npm run build
-
-# Add these lines
+COPY prisma ./prisma
 RUN npx prisma generate
-RUN chmod -R 777 /usr/src/app
+
+COPY . .
+RUN npm run build
 
 EXPOSE 8080
 
