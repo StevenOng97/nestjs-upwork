@@ -9,7 +9,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "scripts": {
-    "build": "nest build --verbose",
+    "build": "nest build",
     "prisma:generate": "prisma generate",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
